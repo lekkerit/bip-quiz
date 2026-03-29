@@ -26,8 +26,8 @@ export const LEVELS: Level[] = [
   {
     level: 2,
     name: 'THE SUBSCRIBER',
-    tagline: 'Paying €20/month. Mostly uses it to rewrite emails.',
-    description: "You made the investment and you're getting something back. But €20/month for email rewrites is like buying a sports car for the school run. The capability you're paying for is sitting idle. Level 3 shows you what context actually does.",
+    tagline: 'Uses Claude regularly. Mostly to rewrite emails.',
+    description: "You're using Claude regularly but for surface-level tasks — rewriting emails, summarising articles, answering questions you could Google. The capability is sitting idle. You haven't discovered what happens when you give it real context. Level 3 shows you.",
     image: '/subscriber.jpg',
     prefix: 'SU',
   },

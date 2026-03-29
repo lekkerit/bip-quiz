@@ -809,9 +809,11 @@ export default function Home() {
                     lineHeight: 1.7,
                   }}
                 >
-                  We&apos;re building a 10-day course to take you
-                  <br />
-                  from Level {level} to Level 7.
+                  {level < 7 ? (
+                    <>We&apos;ll take you from Level {level} to Level 7.</>
+                  ) : (
+                    <>You&apos;re already at the top. Stay sharp.</>
+                  )}
                 </div>
                 <div
                   style={{
@@ -821,7 +823,7 @@ export default function Home() {
                     marginTop: space.md,
                   }}
                 >
-                  We&apos;ll email you when it&apos;s ready.
+                  Course drops soon. You&apos;ll be first to know.
                 </div>
               </div>
 
