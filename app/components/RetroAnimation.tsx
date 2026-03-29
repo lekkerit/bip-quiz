@@ -225,7 +225,7 @@ function drawPacMan(ctx: CanvasRenderingContext2D, t: number, w: number, h: numb
   ctx.fill();
 
   // Ghosts chasing (3 ghosts behind pac-man)
-  const ghostColors = ['rgba(232,117,58,0.5)', 'rgba(232,117,58,0.35)', 'rgba(232,117,58,0.2)'];
+  const ghostColors = ['rgba(255,105,180,0.6)', 'rgba(130,200,255,0.6)', 'rgba(255,175,75,0.55)'];
   for (let g = 0; g < 3; g++) {
     let gx = pacX - 40 - g * 30;
     if (gx < 20) gx += w - 40;
