@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk, DM_Mono } from 'next/font/google';
 
 const spaceGrotesk = Space_Grotesk({
@@ -12,6 +12,14 @@ const dmMono = DM_Mono({
   variable: '--font-dm-mono',
   weight: ['400', '500'],
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#0a0f1a',
+  colorScheme: 'dark',
+};
 
 export const metadata: Metadata = {
   title: 'What level Claude user are you? — Bots in Public',
@@ -28,7 +36,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         background: '#0a0f1a',
         fontFamily: 'var(--font-space-grotesk), sans-serif',
         color: '#c8d8e8',
-        minHeight: '100vh',
+        minHeight: '100dvh',
+        overflowX: 'hidden',
       }}>
         {children}
       </body>

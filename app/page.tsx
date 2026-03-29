@@ -49,6 +49,7 @@ const card: React.CSSProperties = {
   border: `1px solid ${color.cardBorder}`,
   borderRadius: 12,
   overflow: 'hidden',
+  boxSizing: 'border-box',
 };
 
 const cardInner: React.CSSProperties = {
@@ -71,8 +72,9 @@ const centered: React.CSSProperties = {
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: '100vh',
-  padding: space.lg,
+  minHeight: '100dvh',
+  padding: `${space.lg}px ${space.md}px`,
+  boxSizing: 'border-box',
 };
 
 // ── Component ──────────────────────────────────────────────────
@@ -518,7 +520,7 @@ export default function Home() {
             style={{
               position: 'relative',
               width: '100%',
-              height: 260,
+              aspectRatio: '560 / 260',
               overflow: 'hidden',
               opacity: revealStep >= 1 ? 1 : 0,
               transition: 'opacity 0.5s',

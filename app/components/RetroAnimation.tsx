@@ -1,11 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface RetroAnimationProps {
   questionIndex: number;
-  width?: number;
-  height?: number;
 }
 
 // Color palette matching the terminal theme
@@ -14,24 +12,55 @@ const ACCENT_DIM = 'rgba(232,117,58,0.3)';
 const ACCENT_GLOW = 'rgba(232,117,58,0.15)';
 const BG = '#0a0f1a';
 
-export default function RetroAnimation({ questionIndex, width = 480, height = 140 }: RetroAnimationProps) {
+const ASPECT_RATIO = 140 / 480; // height / width
+const PACMAN_ASPECT = 160 / 480;
+
+function useResponsiveCanvas(aspectRatio: number) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [dims, setDims] = useState({ w: 0, h: 0 });
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const measure = () => {
+      const w = container.clientWidth;
+      const h = Math.round(w * aspectRatio);
+      setDims({ w, h });
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [aspectRatio]);
+
+  // Scale canvas buffer for HiDPI
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || dims.w === 0) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = dims.w * dpr;
+    canvas.height = dims.h * dpr;
+    const ctx = canvas.getContext('2d');
+    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }, [dims]);
+
+  return { containerRef, canvasRef, w: dims.w, h: dims.h };
+}
+
+export default function RetroAnimation({ questionIndex }: RetroAnimationProps) {
+  const { containerRef, canvasRef, w, h } = useResponsiveCanvas(ASPECT_RATIO);
   const frameRef = useRef<number>(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || w === 0) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // HiDPI support
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    ctx.scale(dpr, dpr);
-
-    let t = 0;
-    const animations: Record<number, (ctx: CanvasRenderingContext2D, t: number) => void> = {
+    const animations: Record<number, (ctx: CanvasRenderingContext2D, t: number, w: number, h: number) => void> = {
       0: drawPong,
       1: drawInvaders,
       2: drawTerminal,
@@ -41,74 +70,82 @@ export default function RetroAnimation({ questionIndex, width = 480, height = 14
     };
 
     const draw = animations[questionIndex] || animations[0];
+    let t = 0;
 
     function loop() {
-      ctx!.clearRect(0, 0, width, height);
-      draw(ctx!, t);
+      const dpr = window.devicePixelRatio || 1;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx!.clearRect(0, 0, w, h);
+      draw(ctx!, t, w, h);
       t += 0.016;
       frameRef.current = requestAnimationFrame(loop);
     }
 
     loop();
     return () => cancelAnimationFrame(frameRef.current);
-  }, [questionIndex, width, height]);
+  }, [questionIndex, w, h, canvasRef]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        width,
-        height,
-        borderRadius: 8,
-        marginBottom: 16,
-        background: BG,
-        border: `1px solid rgba(232,117,58,0.1)`,
-      }}
-    />
+    <div ref={containerRef} style={{ width: '100%' }}>
+      {w > 0 && (
+        <canvas
+          ref={canvasRef}
+          style={{
+            width: w,
+            height: h,
+            borderRadius: 8,
+            marginBottom: 16,
+            background: BG,
+            border: `1px solid rgba(232,117,58,0.1)`,
+          }}
+        />
+      )}
+    </div>
   );
 }
 
 // ── Pac-Man intro animation ──
-export function PacManIntro({ width = 480, height = 160 }: { width?: number; height?: number }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+export function PacManIntro() {
+  const { containerRef, canvasRef, w, h } = useResponsiveCanvas(PACMAN_ASPECT);
   const frameRef = useRef<number>(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || w === 0) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    ctx.scale(dpr, dpr);
 
     let t = 0;
 
     function loop() {
-      ctx!.clearRect(0, 0, width, height);
-      drawPacMan(ctx!, t, width, height);
+      const dpr = window.devicePixelRatio || 1;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx!.clearRect(0, 0, w, h);
+      drawPacMan(ctx!, t, w, h);
       t += 0.016;
       frameRef.current = requestAnimationFrame(loop);
     }
 
     loop();
     return () => cancelAnimationFrame(frameRef.current);
-  }, [width, height]);
+  }, [w, h, canvasRef]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        width,
-        height,
-        borderRadius: 8,
-        marginBottom: 20,
-        background: BG,
-        border: `1px solid rgba(232,117,58,0.1)`,
-      }}
-    />
+    <div ref={containerRef} style={{ width: '100%' }}>
+      {w > 0 && (
+        <canvas
+          ref={canvasRef}
+          style={{
+            width: w,
+            height: h,
+            borderRadius: 8,
+            marginBottom: 20,
+            background: BG,
+            border: `1px solid rgba(232,117,58,0.1)`,
+          }}
+        />
+      )}
+    </div>
   );
 }
 
@@ -236,8 +273,7 @@ function drawPacMan(ctx: CanvasRenderingContext2D, t: number, w: number, h: numb
 }
 
 // ── Q1: Pong — conversation back and forth ──
-function drawPong(ctx: CanvasRenderingContext2D, t: number) {
-  const w = 480, h = 140;
+function drawPong(ctx: CanvasRenderingContext2D, t: number, w: number, h: number) {
 
   // Scanlines
   ctx.fillStyle = 'rgba(232,117,58,0.015)';
@@ -289,8 +325,7 @@ function drawPong(ctx: CanvasRenderingContext2D, t: number) {
 }
 
 // ── Q2: Space Invaders — data falling/being lost ──
-function drawInvaders(ctx: CanvasRenderingContext2D, t: number) {
-  const w = 480, h = 140;
+function drawInvaders(ctx: CanvasRenderingContext2D, t: number, w: number, h: number) {
 
   // Scanlines
   ctx.fillStyle = 'rgba(232,117,58,0.015)';
@@ -350,8 +385,7 @@ function drawInvaders(ctx: CanvasRenderingContext2D, t: number) {
 }
 
 // ── Q3: Terminal typing — CLAUDE.md ──
-function drawTerminal(ctx: CanvasRenderingContext2D, t: number) {
-  const w = 480;
+function drawTerminal(ctx: CanvasRenderingContext2D, t: number, w: number, _h: number) {
 
   // Terminal chrome
   ctx.fillStyle = 'rgba(232,117,58,0.05)';
@@ -421,8 +455,7 @@ function drawTerminal(ctx: CanvasRenderingContext2D, t: number) {
 }
 
 // ── Q4: Signal/connection waves ──
-function drawSignal(ctx: CanvasRenderingContext2D, t: number) {
-  const w = 480, h = 140;
+function drawSignal(ctx: CanvasRenderingContext2D, t: number, w: number, h: number) {
 
   // Two nodes
   const nodeL = { x: 60, y: h / 2 };
@@ -499,8 +532,7 @@ function drawSignal(ctx: CanvasRenderingContext2D, t: number) {
 }
 
 // ── Q5: Boot screen — terminal startup ──
-function drawBootScreen(ctx: CanvasRenderingContext2D, t: number) {
-  const w = 480, h = 140;
+function drawBootScreen(ctx: CanvasRenderingContext2D, t: number, w: number, h: number) {
 
   // Scanlines
   ctx.fillStyle = 'rgba(232,117,58,0.02)';
@@ -551,8 +583,7 @@ function drawBootScreen(ctx: CanvasRenderingContext2D, t: number) {
 }
 
 // ── Q6: Tetris — blocks stacking/leveling up ──
-function drawTetris(ctx: CanvasRenderingContext2D, t: number) {
-  const w = 480, h = 140;
+function drawTetris(ctx: CanvasRenderingContext2D, t: number, w: number, h: number) {
   const blockSize = 12;
   const gridW = 10;
   const gridH = 10;
