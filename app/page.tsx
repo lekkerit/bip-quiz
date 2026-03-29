@@ -53,7 +53,7 @@ const card: React.CSSProperties = {
 };
 
 const cardInner: React.CSSProperties = {
-  padding: space['2xl'],
+  padding: '32px 28px',
 };
 
 const topHighlight: React.CSSProperties = {
@@ -289,86 +289,164 @@ export default function Home() {
 
   if (screen === 'question') {
     const q = QUESTIONS[questionIndex];
-    return shell(
+    return (
       <>
-        <div
-          style={{
-            fontFamily: font.mono,
-            fontSize: typ.counter.fontSize,
-            letterSpacing: typ.counter.letterSpacing,
-            color: color.textGhost,
-            textAlign: 'right',
-            marginBottom: space.sm,
-          }}
-        >
-          [{questionIndex + 1} / 6]
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <RetroAnimation questionIndex={questionIndex} />
-        </div>
-        <p
-          style={{
-            fontFamily: font.heading,
-            fontSize: typ.question.fontSize,
-            fontWeight: typ.question.fontWeight,
-            letterSpacing: typ.question.letterSpacing,
-            color: color.textHigh,
-            margin: `0 0 ${space.xl}px 0`,
-            lineHeight: 1.45,
-          }}
-        >
-          {q.text}
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {q.options.map((opt, i) => {
-            const isSelected = selectedOption === i;
-            const isHovered = hoveredOption === i && selectedOption === null;
+        <div style={gridBg} />
+        <div style={centered}>
+          <div style={card}>
+            <div style={topHighlight} />
 
-            let optBg: string = 'transparent';
-            let optBorder: string = '1px solid transparent';
-            let optColor: string = color.textLow;
-            let promptColor: string = color.textGhost;
-
-            if (isSelected) {
-              optBg = color.selectedBg;
-              optBorder = `1px solid ${color.selectedBorder}`;
-              optColor = color.textHigh;
-              promptColor = color.accent;
-            } else if (isHovered) {
-              optBg = color.hoverBg;
-              optBorder = `1px solid ${color.hoverBorder}`;
-              optColor = color.textMid;
-              promptColor = color.accent;
-            }
-
-            return (
-              <button
-                key={i}
-                onClick={() => selectedOption === null && selectAnswer(i, opt.range)}
-                onMouseEnter={() => setHoveredOption(i)}
-                onMouseLeave={() => setHoveredOption(null)}
+            {/* Animation panel with overlaid progress dots */}
+            <div
+              style={{
+                position: 'relative',
+                background: 'rgba(232,117,58,0.03)',
+                borderBottom: `1px solid rgba(232,117,58,0.08)`,
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '8px 0 24px',
+              }}
+            >
+              <RetroAnimation questionIndex={questionIndex} />
+              {/* Progress dots */}
+              <div
                 style={{
-                  fontFamily: font.mono,
-                  fontSize: typ.label.fontSize,
-                  color: optColor,
-                  background: optBg,
-                  border: optBorder,
-                  borderRadius: 8,
-                  padding: '12px 14px',
-                  textAlign: 'left',
-                  cursor: selectedOption !== null ? 'default' : 'pointer',
-                  transition: 'all 0.1s',
-                  lineHeight: 1.5,
+                  position: 'absolute',
+                  bottom: 10,
+                  left: 0,
+                  right: 0,
                   display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 10,
+                  gap: 8,
+                  justifyContent: 'center',
                 }}
               >
-                <span style={{ color: promptColor, flexShrink: 0 }}>&gt;</span>
-                {opt.label}
-              </button>
-            );
-          })}
+                {Array.from({ length: QUESTIONS.length }, (_, i) => {
+                  const isCurrent = i === questionIndex;
+                  const isDone = i < questionIndex;
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        width: 7,
+                        height: 7,
+                        borderRadius: '50%',
+                        background: isDone
+                          ? 'rgba(232,117,58,0.7)'
+                          : isCurrent
+                            ? color.accent
+                            : 'rgba(232,117,58,0.15)',
+                        border: !isDone && !isCurrent ? '1px solid rgba(232,117,58,0.3)' : 'none',
+                        boxShadow: isCurrent ? '0 0 8px rgba(232,117,58,0.6)' : 'none',
+                        transition: 'all 0.2s',
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              {/* Scanline overlay */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background:
+                    'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px)',
+                  pointerEvents: 'none',
+                }}
+              />
+            </div>
+
+            {/* Question + Answers */}
+            <div style={{ padding: '28px 28px 32px' }}>
+              <p
+                style={{
+                  fontFamily: font.heading,
+                  fontSize: typ.question.fontSize,
+                  fontWeight: typ.question.fontWeight,
+                  letterSpacing: typ.question.letterSpacing,
+                  color: color.textHigh,
+                  margin: `0 0 ${space.xl}px 0`,
+                  lineHeight: 1.45,
+                }}
+              >
+                {q.text}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {q.options.map((opt, i) => {
+                  const isSelected = selectedOption === i;
+                  const isHovered = hoveredOption === i && selectedOption === null;
+
+                  let optBg: string = 'rgba(255,255,255,0.03)';
+                  let optBorder: string = '1px solid rgba(255,255,255,0.06)';
+                  let optColor: string = color.textLow;
+                  let circleStyle: React.CSSProperties = {
+                    width: 26,
+                    height: 26,
+                    borderRadius: '50%',
+                    border: '1.5px solid rgba(232,117,58,0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    fontSize: 11,
+                    color: color.textGhost,
+                    transition: 'all 0.15s',
+                  };
+
+                  if (isSelected) {
+                    optBg = color.selectedBg;
+                    optBorder = `1px solid ${color.selectedBorder}`;
+                    optColor = color.accent;
+                    circleStyle = {
+                      ...circleStyle,
+                      border: `1.5px solid rgba(232,117,58,0.6)`,
+                      background: 'rgba(232,117,58,0.15)',
+                      color: color.accent,
+                    };
+                  } else if (isHovered) {
+                    optBg = color.hoverBg;
+                    optBorder = `1px solid ${color.hoverBorder}`;
+                    optColor = color.textMid;
+                    circleStyle = {
+                      ...circleStyle,
+                      border: `1.5px solid rgba(232,117,58,0.4)`,
+                      color: color.accent,
+                    };
+                  }
+
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => selectedOption === null && selectAnswer(i, opt.range)}
+                      onMouseEnter={() => setHoveredOption(i)}
+                      onMouseLeave={() => setHoveredOption(null)}
+                      style={{
+                        fontFamily: font.mono,
+                        fontSize: typ.label.fontSize,
+                        color: optColor,
+                        background: optBg,
+                        border: optBorder,
+                        borderRadius: 8,
+                        padding: '14px 18px',
+                        textAlign: 'left',
+                        cursor: selectedOption !== null ? 'default' : 'pointer',
+                        transition: 'all 0.15s',
+                        lineHeight: 1.5,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        boxShadow: isSelected ? '0 0 12px rgba(232,117,58,0.08)' : 'none',
+                      }}
+                    >
+                      <span style={circleStyle}>
+                        {isSelected ? '\u25CF' : '\u25CB'}
+                      </span>
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
       </>
     );
@@ -380,6 +458,29 @@ export default function Home() {
     return shell(
       <>
         <style>{`input[type=email]::placeholder { color: ${color.textGhost}; } input[type=email]:focus { border-color: ${color.selectedBorder} !important; }`}</style>
+
+        {/* Progress dots — all filled */}
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            justifyContent: 'center',
+            marginBottom: space.xl,
+          }}
+        >
+          {Array.from({ length: QUESTIONS.length }, (_, i) => (
+            <div
+              key={i}
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: '50%',
+                background: color.accent,
+                opacity: 0.7,
+              }}
+            />
+          ))}
+        </div>
 
         {/* Blurred fake result preview */}
         <div
@@ -465,8 +566,8 @@ export default function Home() {
             color: color.textHigh,
             background: 'rgba(255,255,255,0.04)',
             border: `1px solid rgba(232,117,58,0.15)`,
-            borderRadius: 6,
-            padding: '10px 14px',
+            borderRadius: 8,
+            padding: '14px 18px',
             outline: 'none',
             marginBottom: 10,
           }}
@@ -481,8 +582,8 @@ export default function Home() {
             color: color.accent,
             background: color.ctaBg,
             border: `1px solid ${color.ctaBorder}`,
-            borderRadius: 6,
-            padding: '12px 24px',
+            borderRadius: 8,
+            padding: '14px 24px',
             cursor: 'pointer',
             marginBottom: space.md,
             textAlign: 'center',
