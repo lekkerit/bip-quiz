@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { LEVELS, QUESTIONS } from './lib/data';
 import { calculateLevel, AnswerRange } from './lib/scoring';
+import { color, font, type as typ, space } from './lib/theme';
 
 type Screen = 'intro' | 'question' | 'email' | 'result';
 
@@ -43,23 +44,23 @@ const card: React.CSSProperties = {
   position: 'relative',
   width: '100%',
   maxWidth: 480,
-  background: 'rgba(255,255,255,0.025)',
-  border: '1px solid rgba(0,200,220,0.12)',
+  background: color.cardBg,
+  border: `1px solid ${color.cardBorder}`,
   borderRadius: 12,
   overflow: 'hidden',
 };
 
 const cardInner: React.CSSProperties = {
-  padding: 32,
+  padding: space['2xl'],
 };
 
 const topHighlight: React.CSSProperties = {
   position: 'absolute',
   top: 0,
-  left: 0,
-  right: 0,
+  left: '10%',
+  right: '10%',
   height: 1,
-  background: 'linear-gradient(90deg, transparent, rgba(0,200,220,0.3), transparent)',
+  background: `linear-gradient(90deg, transparent, ${color.highlightGlow}, transparent)`,
 };
 
 const centered: React.CSSProperties = {
@@ -70,7 +71,7 @@ const centered: React.CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   minHeight: '100vh',
-  padding: 16,
+  padding: space.lg,
 };
 
 // ── Component ──────────────────────────────────────────────────
@@ -78,6 +79,7 @@ const centered: React.CSSProperties = {
 export default function Home() {
   const [state, setState] = useState<QuizState>(initialState);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [hoveredOption, setHoveredOption] = useState<number | null>(null);
   const emailRef = useRef<HTMLInputElement>(null);
 
   const { screen, questionIndex, answers, email, level, revealStep, typedTagline } = state;
@@ -143,6 +145,7 @@ export default function Home() {
       setSelectedOption(optionIndex);
       setTimeout(() => {
         setSelectedOption(null);
+        setHoveredOption(null);
         setState((prev) => {
           const newAnswers = [...prev.answers, range];
           if (prev.questionIndex < QUESTIONS.length - 1) {
@@ -159,7 +162,6 @@ export default function Home() {
   const submitEmail = useCallback(() => {
     if (!state.email.trim()) return;
 
-    // Non-blocking POST
     const substackUrl = process.env.NEXT_PUBLIC_SUBSTACK_URL;
     if (substackUrl) {
       fetch(`${substackUrl}/api/v1/free`, {
@@ -179,6 +181,7 @@ export default function Home() {
   const resetQuiz = useCallback(() => {
     setState(initialState);
     setSelectedOption(null);
+    setHoveredOption(null);
   }, []);
 
   const shareResult = useCallback(async () => {
@@ -216,10 +219,11 @@ export default function Home() {
         <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
         <p
           style={{
-            fontFamily: 'var(--font-dm-mono), monospace',
-            fontSize: 13,
-            color: '#00c8dc',
-            margin: '0 0 24px 0',
+            fontFamily: font.mono,
+            fontSize: typ.counter.fontSize,
+            color: color.accent,
+            margin: `0 0 ${space['2xl']}px 0`,
+            opacity: 0.7,
           }}
         >
           $ bots-in-public --quiz
@@ -227,39 +231,42 @@ export default function Home() {
         </p>
         <h1
           style={{
-            fontFamily: 'var(--font-space-grotesk), sans-serif',
-            fontSize: 26,
-            fontWeight: 600,
-            color: '#e8f4f8',
-            margin: '0 0 12px 0',
-            lineHeight: 1.2,
+            fontFamily: font.heading,
+            fontSize: typ.headline.fontSize,
+            fontWeight: typ.headline.fontWeight,
+            letterSpacing: typ.headline.letterSpacing,
+            color: color.textHigh,
+            margin: `0 0 ${space.sm}px 0`,
+            lineHeight: 1.3,
           }}
         >
           What level Claude user are you?
         </h1>
         <p
           style={{
-            fontSize: 14,
+            fontFamily: font.mono,
+            fontSize: typ.label.fontSize,
             lineHeight: 1.6,
-            color: '#8aa8b8',
-            margin: '0 0 28px 0',
+            margin: `0 0 ${space.xl}px 0`,
           }}
         >
-          <span style={{ color: '#8aa8b8' }}>
+          <span style={{ color: color.textMid }}>
             Most Claude Pro subscribers are stuck at Level 2.
-          </span>{' '}
-          <span style={{ color: '#5a7a8a' }}>
+          </span>
+          <br />
+          <span style={{ color: color.textLow }}>
             Six questions. Find out where you actually are.
           </span>
         </p>
         <button
           onClick={startQuiz}
           style={{
-            fontFamily: 'var(--font-dm-mono), monospace',
-            fontSize: 13,
-            color: '#00c8dc',
-            background: 'rgba(0,200,220,0.08)',
-            border: '1px solid rgba(0,200,220,0.3)',
+            fontFamily: font.mono,
+            fontSize: typ.code.fontSize,
+            letterSpacing: typ.code.letterSpacing,
+            color: color.accent,
+            background: color.ctaBg,
+            border: `1px solid ${color.ctaBorder}`,
             borderRadius: 6,
             padding: '10px 24px',
             cursor: 'pointer',
@@ -280,50 +287,75 @@ export default function Home() {
       <>
         <div
           style={{
-            fontFamily: 'var(--font-dm-mono), monospace',
-            fontSize: 12,
-            color: '#2a4a5a',
+            fontFamily: font.mono,
+            fontSize: typ.counter.fontSize,
+            letterSpacing: typ.counter.letterSpacing,
+            color: color.textGhost,
             textAlign: 'right',
-            marginBottom: 20,
+            marginBottom: space.xl,
           }}
         >
           [{questionIndex + 1} / 6]
         </div>
         <p
           style={{
-            fontFamily: 'var(--font-space-grotesk), sans-serif',
-            fontSize: 17,
-            color: '#e8f4f8',
-            margin: '0 0 24px 0',
-            lineHeight: 1.4,
+            fontFamily: font.heading,
+            fontSize: typ.question.fontSize,
+            fontWeight: typ.question.fontWeight,
+            letterSpacing: typ.question.letterSpacing,
+            color: color.textHigh,
+            margin: `0 0 ${space['2xl']}px 0`,
+            lineHeight: 1.45,
           }}
         >
           {q.text}
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {q.options.map((opt, i) => {
             const isSelected = selectedOption === i;
+            const isHovered = hoveredOption === i && selectedOption === null;
+
+            let optBg: string = 'transparent';
+            let optBorder: string = '1px solid transparent';
+            let optColor: string = color.textLow;
+            let promptColor: string = color.textGhost;
+
+            if (isSelected) {
+              optBg = color.selectedBg;
+              optBorder = `1px solid ${color.selectedBorder}`;
+              optColor = color.textHigh;
+              promptColor = color.accent;
+            } else if (isHovered) {
+              optBg = color.hoverBg;
+              optBorder = `1px solid ${color.hoverBorder}`;
+              optColor = color.textMid;
+              promptColor = color.accent;
+            }
+
             return (
               <button
                 key={i}
-                onClick={() => selectAnswer(i, opt.range)}
+                onClick={() => selectedOption === null && selectAnswer(i, opt.range)}
+                onMouseEnter={() => setHoveredOption(i)}
+                onMouseLeave={() => setHoveredOption(null)}
                 style={{
-                  fontFamily: 'var(--font-dm-mono), monospace',
-                  fontSize: 12,
-                  color: isSelected ? '#00c8dc' : '#8aa8b8',
-                  background: isSelected ? 'rgba(0,200,220,0.12)' : 'transparent',
-                  border: isSelected
-                    ? '1px solid rgba(0,200,220,0.4)'
-                    : '1px solid rgba(0,200,220,0.08)',
+                  fontFamily: font.mono,
+                  fontSize: typ.label.fontSize,
+                  color: optColor,
+                  background: optBg,
+                  border: optBorder,
                   borderRadius: 6,
-                  padding: '10px 14px',
+                  padding: '10px 12px',
                   textAlign: 'left',
-                  cursor: 'pointer',
-                  transition: 'all 0.12s',
+                  cursor: selectedOption !== null ? 'default' : 'pointer',
+                  transition: 'all 0.1s',
                   lineHeight: 1.5,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
                 }}
               >
-                <span style={{ color: '#00c8dc', marginRight: 8 }}>&gt;</span>
+                <span style={{ color: promptColor, flexShrink: 0 }}>&gt;</span>
                 {opt.label}
               </button>
             );
@@ -338,7 +370,7 @@ export default function Home() {
   if (screen === 'email') {
     return shell(
       <>
-        <style>{`input[type=email]::placeholder { color: #2a4a5a; } input[type=email]:focus { border-color: rgba(0,200,220,0.4) !important; }`}</style>
+        <style>{`input[type=email]::placeholder { color: ${color.textGhost}; } input[type=email]:focus { border-color: ${color.selectedBorder} !important; }`}</style>
 
         {/* Blurred fake result preview */}
         <div
@@ -346,51 +378,63 @@ export default function Home() {
             filter: 'blur(5px)',
             opacity: 0.5,
             pointerEvents: 'none',
-            marginBottom: 24,
-            padding: 16,
-            background: 'rgba(0,200,220,0.04)',
+            userSelect: 'none',
+            marginBottom: space.lg,
+            padding: 14,
+            background: color.blurBg,
+            border: `1px solid ${color.blurBorder}`,
             borderRadius: 8,
           }}
         >
           <div
             style={{
-              fontFamily: 'var(--font-dm-mono), monospace',
-              fontSize: 11,
-              color: '#00c8dc',
-              marginBottom: 8,
+              fontFamily: font.mono,
+              fontSize: typ.counter.fontSize,
+              color: color.accent,
+              marginBottom: space.sm,
             }}
           >
             ◉ LEVEL UNLOCKED
           </div>
           <div
             style={{
-              fontFamily: 'var(--font-space-grotesk), sans-serif',
-              fontSize: 22,
-              fontWeight: 600,
-              color: '#e8f4f8',
+              fontFamily: font.mono,
+              fontSize: 14,
+              color: color.textHigh,
             }}
           >
-            Level {level} — {currentLevel.name}
+            LEVEL {level} — {currentLevel.name}
+          </div>
+          <div
+            style={{
+              fontFamily: font.mono,
+              fontSize: typ.counter.fontSize,
+              color: color.textLow,
+              marginTop: space.xs,
+            }}
+          >
+            &ldquo;{currentLevel.tagline.slice(0, 30)}...&rdquo;
           </div>
         </div>
 
         <h2
           style={{
-            fontFamily: 'var(--font-space-grotesk), sans-serif',
-            fontSize: 22,
+            fontFamily: font.heading,
+            fontSize: 15,
             fontWeight: 600,
-            color: '#e8f4f8',
-            margin: '0 0 8px 0',
+            color: color.textHigh,
+            margin: `0 0 ${space.xs}px 0`,
           }}
         >
           Your result is ready.
         </h2>
         <p
           style={{
-            fontSize: 14,
-            color: '#8aa8b8',
+            fontFamily: font.mono,
+            fontSize: typ.counter.fontSize,
+            color: color.textMuted,
             lineHeight: 1.6,
-            margin: '0 0 20px 0',
+            margin: `0 0 14px 0`,
           }}
         >
           Enter your email to unlock your level — and find out exactly what&apos;s keeping you stuck.
@@ -407,41 +451,42 @@ export default function Home() {
           style={{
             width: '100%',
             boxSizing: 'border-box',
-            fontFamily: 'var(--font-dm-mono), monospace',
-            fontSize: 14,
-            color: '#e8f4f8',
-            background: 'rgba(0,0,0,0.3)',
-            border: '1px solid rgba(0,200,220,0.15)',
+            fontFamily: font.mono,
+            fontSize: typ.code.fontSize,
+            color: color.textHigh,
+            background: 'rgba(255,255,255,0.04)',
+            border: `1px solid rgba(0,200,220,0.15)`,
             borderRadius: 6,
             padding: '10px 14px',
             outline: 'none',
-            marginBottom: 12,
+            marginBottom: 10,
           }}
         />
         <button
           onClick={submitEmail}
           style={{
             width: '100%',
-            fontFamily: 'var(--font-dm-mono), monospace',
-            fontSize: 13,
-            color: '#00c8dc',
-            background: 'rgba(0,200,220,0.08)',
-            border: '1px solid rgba(0,200,220,0.3)',
+            fontFamily: font.mono,
+            fontSize: typ.code.fontSize,
+            letterSpacing: typ.code.letterSpacing,
+            color: color.accent,
+            background: color.ctaBg,
+            border: `1px solid ${color.ctaBorder}`,
             borderRadius: 6,
-            padding: '10px 24px',
+            padding: '12px 24px',
             cursor: 'pointer',
-            marginBottom: 12,
+            marginBottom: space.md,
+            textAlign: 'center',
           }}
         >
           [ unlock my level → ]
         </button>
         <p
           style={{
-            fontFamily: 'var(--font-dm-mono), monospace',
-            fontSize: 10,
-            color: '#2a4a5a',
+            fontFamily: font.mono,
+            fontSize: typ.finePrint.fontSize,
+            color: color.textGhost,
             margin: 0,
-            textAlign: 'center',
           }}
         >
           No spam. 3 emails over 3 days. Unsubscribe anytime.
@@ -454,196 +499,254 @@ export default function Home() {
 
   const taglineComplete = typedTagline.length >= currentLevel.tagline.length;
 
-  return shell(
+  return (
     <>
-      <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
+      <div style={gridBg} />
+      <div style={centered}>
+        <div style={{ ...card, maxWidth: 560 }}>
+          <div style={topHighlight} />
 
-      {/* Step 1: Level badge */}
-      <div
-        style={{
-          fontFamily: 'var(--font-dm-mono), monospace',
-          fontSize: 11,
-          color: '#00c8dc',
-          marginBottom: 12,
-          opacity: revealStep >= 1 ? 1 : 0,
-          transition: 'opacity 0.4s',
-        }}
-      >
-        ◉ LEVEL UNLOCKED
-      </div>
-
-      {/* Step 2: Level number + name */}
-      <h2
-        style={{
-          fontFamily: 'var(--font-space-grotesk), sans-serif',
-          fontSize: 26,
-          fontWeight: 600,
-          color: '#e8f4f8',
-          margin: '0 0 16px 0',
-          opacity: revealStep >= 2 ? 1 : 0,
-          transition: 'opacity 0.4s',
-        }}
-      >
-        Level {level} — {currentLevel.name}
-      </h2>
-
-      {/* Step 3: Horizontal rule */}
-      <div
-        style={{
-          height: 1,
-          background: 'rgba(0,200,220,0.2)',
-          marginBottom: 16,
-          transform: revealStep >= 3 ? 'scaleX(1)' : 'scaleX(0)',
-          transformOrigin: 'left',
-          transition: 'transform 0.5s',
-        }}
-      />
-
-      {/* Step 4: Tagline typing */}
-      <p
-        style={{
-          fontFamily: 'var(--font-dm-mono), monospace',
-          fontSize: 13,
-          color: '#00c8dc',
-          lineHeight: 1.6,
-          margin: '0 0 16px 0',
-          minHeight: 24,
-          opacity: revealStep >= 4 ? 1 : 0,
-        }}
-      >
-        {revealStep >= 4 && (
-          <>
-            &ldquo;{typedTagline}
-            {!taglineComplete && (
-              <span style={{ animation: 'blink 1s step-end infinite' }}>█</span>
-            )}
-            {taglineComplete && <>&rdquo;</>}
-          </>
-        )}
-      </p>
-
-      {/* Step 5: Description */}
-      <p
-        style={{
-          fontSize: 14,
-          color: '#8aa8b8',
-          lineHeight: 1.7,
-          margin: '0 0 24px 0',
-          opacity: revealStep >= 5 ? 1 : 0,
-          transition: 'opacity 0.5s',
-        }}
-      >
-        {currentLevel.description}
-      </p>
-
-      {/* Step 6: QR + CTAs */}
-      <div
-        style={{
-          opacity: revealStep >= 6 ? 1 : 0,
-          transform: revealStep >= 6 ? 'translateY(0)' : 'translateY(16px)',
-          transition: 'opacity 0.5s, transform 0.5s',
-        }}
-      >
-        {/* QR Code block */}
-        <div
-          style={{
-            background: 'rgba(0,200,220,0.04)',
-            border: '1px solid rgba(0,200,220,0.12)',
-            borderRadius: 8,
-            padding: 20,
-            marginBottom: 16,
-          }}
-        >
+          {/* Result header */}
           <div
             style={{
-              fontFamily: 'var(--font-dm-mono), monospace',
-              fontSize: 10,
-              color: '#00c8dc',
-              marginBottom: 12,
-              letterSpacing: 1,
+              background: 'rgba(0,200,220,0.06)',
+              borderBottom: `1px solid ${color.cardBorder}`,
+              padding: `${space.xl}px ${space['2xl']}px 18px`,
             }}
           >
-            [ RECOMMENDED ]
-          </div>
-          <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+            {/* Step 1: Level badge */}
             <div
               style={{
-                background: '#e8f4f8',
-                borderRadius: 6,
-                padding: 8,
-                flexShrink: 0,
+                fontFamily: font.mono,
+                fontSize: typ.finePrint.fontSize,
+                color: color.accent,
+                letterSpacing: '3px',
+                marginBottom: space.md,
+                opacity: revealStep >= 1 ? 0.8 : 0,
+                transition: 'opacity 0.3s',
               }}
             >
-              <QRCodeSVG
-                value="https://botsinpublic.substack.com/subscribe"
-                size={96}
-                fgColor="#0a0f1a"
-                bgColor="#e8f4f8"
-              />
+              ◉ LEVEL UNLOCKED
             </div>
-            <div>
+
+            {/* Step 3: Horizontal rule */}
+            <hr
+              style={{
+                border: 'none',
+                borderTop: '1px solid rgba(0,200,220,0.2)',
+                margin: `${space.sm}px 0`,
+                opacity: revealStep >= 3 ? 1 : 0,
+                transition: 'opacity 0.2s',
+              }}
+            />
+
+            {/* Step 2: Level number + name (side by side) */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'baseline',
+                gap: 14,
+                margin: `6px 0 ${space.xs}px`,
+              }}
+            >
               <div
                 style={{
-                  fontFamily: 'var(--font-space-grotesk), sans-serif',
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: '#e8f4f8',
-                  marginBottom: 4,
+                  fontFamily: font.mono,
+                  fontSize: 36,
+                  fontWeight: 500,
+                  color: color.accent,
+                  letterSpacing: '-1px',
+                  lineHeight: 1,
+                  opacity: revealStep >= 1 ? 1 : 0,
+                  transition: 'opacity 0.3s',
                 }}
               >
-                €99 once
+                {level}
               </div>
+              <div>
+                <div
+                  style={{
+                    fontFamily: font.mono,
+                    fontSize: 16,
+                    color: color.textHigh,
+                    fontWeight: 500,
+                    letterSpacing: '1px',
+                    opacity: revealStep >= 2 ? 1 : 0,
+                    transition: 'opacity 0.4s',
+                  }}
+                >
+                  {currentLevel.name}
+                </div>
+                <hr
+                  style={{
+                    border: 'none',
+                    borderTop: '1px solid rgba(0,200,220,0.15)',
+                    margin: `${space.xs}px 0`,
+                    opacity: revealStep >= 3 ? 1 : 0,
+                    transition: 'opacity 0.2s',
+                  }}
+                />
+                {/* Step 4: Tagline typing */}
+                <div
+                  style={{
+                    fontFamily: font.mono,
+                    fontSize: typ.counter.fontSize,
+                    color: color.textLow,
+                    fontStyle: 'italic',
+                    lineHeight: 1.5,
+                    minHeight: 18,
+                    opacity: revealStep >= 4 ? 1 : 0,
+                  }}
+                >
+                  {revealStep >= 4 && (
+                    <>
+                      &ldquo;{typedTagline}
+                      {!taglineComplete && (
+                        <span style={{ animation: 'blink 1s step-end infinite' }}>█</span>
+                      )}
+                      {taglineComplete && <>&rdquo;</>}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Result body */}
+          <div
+            style={{
+              padding: `${space.xl}px ${space['2xl']}px`,
+              opacity: revealStep >= 5 ? 1 : 0,
+              transition: 'opacity 0.3s',
+            }}
+          >
+            <p
+              style={{
+                fontFamily: font.mono,
+                fontSize: typ.code.fontSize,
+                color: color.textMuted,
+                lineHeight: 1.7,
+                margin: `0 0 ${space.xl}px 0`,
+              }}
+            >
+              {currentLevel.description}
+            </p>
+
+            {/* Step 6: QR + CTAs */}
+            <div
+              style={{
+                opacity: revealStep >= 6 ? 1 : 0,
+                transform: revealStep >= 6 ? 'translateY(0)' : 'translateY(12px)',
+                transition: 'opacity 0.4s, transform 0.4s',
+              }}
+            >
+              {/* QR Code block */}
               <div
                 style={{
-                  fontSize: 12,
-                  color: '#5a7a8a',
-                  lineHeight: 1.5,
+                  background: 'rgba(0,200,220,0.05)',
+                  border: `1px solid rgba(0,200,220,0.25)`,
+                  borderRadius: 10,
+                  padding: space.xl,
+                  textAlign: 'center',
+                  marginBottom: 14,
                 }}
               >
-                Course + Claude Pro 1 month / Guided from your level to Level 7
+                <div
+                  style={{
+                    fontFamily: font.mono,
+                    fontSize: typ.microLabel.fontSize,
+                    letterSpacing: typ.microLabel.letterSpacing,
+                    color: color.accent,
+                    opacity: 0.8,
+                    marginBottom: 14,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  [ RECOMMENDED ]
+                </div>
+                <div
+                  style={{
+                    display: 'inline-block',
+                    background: color.qrBg,
+                    padding: space.sm,
+                    borderRadius: 6,
+                    marginBottom: 14,
+                  }}
+                >
+                  <QRCodeSVG
+                    value="https://botsinpublic.substack.com/subscribe"
+                    size={96}
+                    fgColor={color.qrFg}
+                    bgColor={color.qrBg}
+                  />
+                </div>
+                <div
+                  style={{
+                    fontFamily: font.mono,
+                    fontSize: 18,
+                    fontWeight: 500,
+                    color: color.accent,
+                    marginBottom: space.xs,
+                  }}
+                >
+                  €99 once
+                </div>
+                <div
+                  style={{
+                    fontFamily: font.mono,
+                    fontSize: typ.counter.fontSize,
+                    color: color.textMuted,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Course + Claude Pro 1 month
+                  <br />
+                  Guided from your level to Level 7
+                </div>
+              </div>
+
+              {/* Share row */}
+              <div style={{ display: 'flex', gap: space.sm }}>
+                <button
+                  onClick={shareResult}
+                  style={{
+                    flex: 1,
+                    fontFamily: font.mono,
+                    fontSize: typ.counter.fontSize,
+                    color: color.textLow,
+                    background: 'transparent',
+                    border: `1px solid rgba(0,200,220,0.2)`,
+                    borderRadius: 6,
+                    padding: 10,
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                  }}
+                >
+                  ↗ share my level
+                </button>
+                <button
+                  onClick={resetQuiz}
+                  style={{
+                    flex: 1,
+                    fontFamily: font.mono,
+                    fontSize: typ.counter.fontSize,
+                    color: color.textGhost,
+                    background: 'transparent',
+                    border: `1px solid ${color.subtleBorder}`,
+                    borderRadius: 6,
+                    padding: 10,
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                  }}
+                >
+                  → start at level 1 free
+                </button>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Share row */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: 12,
-          }}
-        >
-          <button
-            onClick={shareResult}
-            style={{
-              fontFamily: 'var(--font-dm-mono), monospace',
-              fontSize: 12,
-              color: '#00c8dc',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-            }}
-          >
-            ↗ share my level
-          </button>
-          <button
-            onClick={resetQuiz}
-            style={{
-              fontFamily: 'var(--font-dm-mono), monospace',
-              fontSize: 12,
-              color: '#5a7a8a',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-            }}
-          >
-            → start at level 1 free
-          </button>
-        </div>
       </div>
+      <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
     </>
   );
 }
