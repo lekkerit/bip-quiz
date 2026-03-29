@@ -5,6 +5,8 @@ export interface Level {
   name: string;
   tagline: string;
   description: string;
+  image: string;
+  prefix: string;
 }
 
 export interface Question {
@@ -18,42 +20,56 @@ export const LEVELS: Level[] = [
     name: 'THE TOURIST',
     tagline: 'Used ChatGPT once. Thinks Claude is basically the same thing.',
     description: "You've heard the hype and dipped a toe in. Claude felt clever but disposable. You're not wrong that it's impressive — you just haven't found the version that works for you yet. Level 2 is one habit change away.",
+    image: '/tourist.jpg',
+    prefix: 'TO',
   },
   {
     level: 2,
     name: 'THE SUBSCRIBER',
     tagline: 'Paying €20/month. Mostly uses it to rewrite emails.',
     description: "You made the investment and you're getting something back. But €20/month for email rewrites is like buying a sports car for the school run. The capability you're paying for is sitting idle. Level 3 shows you what context actually does.",
+    image: '/subscriber.jpg',
+    prefix: 'SU',
   },
   {
     level: 3,
     name: 'THE PROMPTER',
     tagline: 'Has learned to give Claude context. Loses everything when they close the tab.',
     description: "You've figured out that context matters. You give Claude a solid brief and you get solid output. But every session resets — and you feel it. The amnesia isn't Claude's fault. It's a missing layer you haven't built yet. Level 4 is one 90-minute setup away.",
+    image: '/prompter.jpg',
+    prefix: 'PR',
   },
   {
     level: 4,
     name: 'THE FRUSTRATED ONE',
     tagline: 'Has had a genuinely impressive Claude conversation. Has never been able to recreate it.',
     description: "You've seen what Claude can do when everything clicks. That conversation was real. But you can't get back there reliably — it feels random. It's not. There's a structure behind those breakthroughs. Level 5 makes it repeatable.",
+    image: '/frustrated.jpg',
+    prefix: 'FR',
   },
   {
     level: 5,
     name: 'THE UNLOCKED',
     tagline: 'Claude Code installed. CLAUDE.md created. Claude knows their business.',
     description: "You broke through. Claude has context on your work and you're not re-explaining yourself every session. This is the transition most people never make — you made it. Level 6 is about building something real with the foundation you've laid.",
+    image: '/unlocked.jpg',
+    prefix: 'UN',
   },
   {
     level: 6,
     name: 'THE BUILDER',
     tagline: 'Has shipped one real project with Claude. Understands memory architecture.',
     description: "You've shipped something you couldn't have built alone. You understand how Claude's memory layers work and you've stopped fighting the context window. The next move: connect Claude to your live systems. Level 7 is MCP territory.",
+    image: '/builder.jpg',
+    prefix: 'BU',
   },
   {
     level: 7,
     name: 'THE STATEFUL OPERATOR',
     tagline: 'Claude carries full context. MCP connected. Never re-explains themselves.',
     description: "Claude knows your business, your tools, and your preferences. You've stopped managing the AI and started building with it. This is the compounding return: every project adds context, every context makes the next project faster. You're running ahead.",
+    image: '/operator.jpg',
+    prefix: 'SO',
   },
 ];
 

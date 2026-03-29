@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+import Image from 'next/image';
 import { LEVELS, QUESTIONS } from './lib/data';
 import { calculateLevel, AnswerRange } from './lib/scoring';
 import { color, font, type as typ, space } from './lib/theme';
+import RetroAnimation, { PacManIntro } from './components/RetroAnimation';
 
 type Screen = 'intro' | 'question' | 'email' | 'result';
 
@@ -34,7 +35,7 @@ const gridBg: React.CSSProperties = {
   position: 'fixed',
   inset: 0,
   backgroundImage:
-    'linear-gradient(rgba(0,200,220,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,200,220,0.025) 1px, transparent 1px)',
+    'linear-gradient(rgba(232,117,58,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(232,117,58,0.025) 1px, transparent 1px)',
   backgroundSize: '32px 32px',
   pointerEvents: 'none',
   zIndex: 0,
@@ -43,7 +44,7 @@ const gridBg: React.CSSProperties = {
 const card: React.CSSProperties = {
   position: 'relative',
   width: '100%',
-  maxWidth: 480,
+  maxWidth: 520,
   background: color.cardBg,
   border: `1px solid ${color.cardBorder}`,
   borderRadius: 12,
@@ -217,12 +218,15 @@ export default function Home() {
     return shell(
       <>
         <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <PacManIntro />
+        </div>
         <p
           style={{
             fontFamily: font.mono,
             fontSize: typ.counter.fontSize,
             color: color.accent,
-            margin: `0 0 ${space['2xl']}px 0`,
+            margin: `0 0 ${space.xl}px 0`,
             opacity: 0.7,
           }}
         >
@@ -251,7 +255,7 @@ export default function Home() {
           }}
         >
           <span style={{ color: color.textMid }}>
-            Most Claude Pro subscribers are stuck at Level 2.
+            Most AI power users are stuck at Level 2.
           </span>
           <br />
           <span style={{ color: color.textLow }}>
@@ -292,10 +296,13 @@ export default function Home() {
             letterSpacing: typ.counter.letterSpacing,
             color: color.textGhost,
             textAlign: 'right',
-            marginBottom: space.xl,
+            marginBottom: space.sm,
           }}
         >
           [{questionIndex + 1} / 6]
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <RetroAnimation questionIndex={questionIndex} />
         </div>
         <p
           style={{
@@ -304,13 +311,13 @@ export default function Home() {
             fontWeight: typ.question.fontWeight,
             letterSpacing: typ.question.letterSpacing,
             color: color.textHigh,
-            margin: `0 0 ${space['2xl']}px 0`,
+            margin: `0 0 ${space.xl}px 0`,
             lineHeight: 1.45,
           }}
         >
           {q.text}
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {q.options.map((opt, i) => {
             const isSelected = selectedOption === i;
             const isHovered = hoveredOption === i && selectedOption === null;
@@ -344,8 +351,8 @@ export default function Home() {
                   color: optColor,
                   background: optBg,
                   border: optBorder,
-                  borderRadius: 6,
-                  padding: '10px 12px',
+                  borderRadius: 8,
+                  padding: '12px 14px',
                   textAlign: 'left',
                   cursor: selectedOption !== null ? 'default' : 'pointer',
                   transition: 'all 0.1s',
@@ -437,7 +444,7 @@ export default function Home() {
             margin: `0 0 14px 0`,
           }}
         >
-          Enter your email to unlock your level — and find out exactly what&apos;s keeping you stuck.
+          Enter your email to unlock your level — and be first to know when the course drops.
         </p>
         <input
           ref={emailRef}
@@ -455,7 +462,7 @@ export default function Home() {
             fontSize: typ.code.fontSize,
             color: color.textHigh,
             background: 'rgba(255,255,255,0.04)',
-            border: `1px solid rgba(0,200,220,0.15)`,
+            border: `1px solid rgba(232,117,58,0.15)`,
             borderRadius: 6,
             padding: '10px 14px',
             outline: 'none',
@@ -506,10 +513,37 @@ export default function Home() {
         <div style={{ ...card, maxWidth: 560 }}>
           <div style={topHighlight} />
 
+          {/* Hero image */}
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: 260,
+              overflow: 'hidden',
+              opacity: revealStep >= 1 ? 1 : 0,
+              transition: 'opacity 0.5s',
+            }}
+          >
+            <Image
+              src={currentLevel.image}
+              alt={currentLevel.name}
+              fill
+              style={{ objectFit: 'cover' }}
+              priority
+            />
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(to bottom, transparent 50%, rgba(10,12,16,0.85) 100%)',
+              }}
+            />
+          </div>
+
           {/* Result header */}
           <div
             style={{
-              background: 'rgba(0,200,220,0.06)',
+              background: 'rgba(232,117,58,0.06)',
               borderBottom: `1px solid ${color.cardBorder}`,
               padding: `${space.xl}px ${space['2xl']}px 18px`,
             }}
@@ -533,7 +567,7 @@ export default function Home() {
             <hr
               style={{
                 border: 'none',
-                borderTop: '1px solid rgba(0,200,220,0.2)',
+                borderTop: '1px solid rgba(232,117,58,0.2)',
                 margin: `${space.sm}px 0`,
                 opacity: revealStep >= 3 ? 1 : 0,
                 transition: 'opacity 0.2s',
@@ -580,7 +614,7 @@ export default function Home() {
                 <hr
                   style={{
                     border: 'none',
-                    borderTop: '1px solid rgba(0,200,220,0.15)',
+                    borderTop: '1px solid rgba(232,117,58,0.15)',
                     margin: `${space.xs}px 0`,
                     opacity: revealStep >= 3 ? 1 : 0,
                     transition: 'opacity 0.2s',
@@ -640,11 +674,11 @@ export default function Home() {
                 transition: 'opacity 0.4s, transform 0.4s',
               }}
             >
-              {/* QR Code block */}
+              {/* Waitlist confirmation */}
               <div
                 style={{
-                  background: 'rgba(0,200,220,0.05)',
-                  border: `1px solid rgba(0,200,220,0.25)`,
+                  background: 'rgba(232,117,58,0.05)',
+                  border: `1px solid rgba(232,117,58,0.25)`,
                   borderRadius: 10,
                   padding: space.xl,
                   textAlign: 'center',
@@ -662,50 +696,33 @@ export default function Home() {
                     textTransform: 'uppercase',
                   }}
                 >
-                  [ RECOMMENDED ]
-                </div>
-                <div
-                  style={{
-                    display: 'inline-block',
-                    background: color.qrBg,
-                    padding: space.sm,
-                    borderRadius: 6,
-                    marginBottom: 14,
-                  }}
-                >
-                  <QRCodeSVG
-                    value="https://botsinpublic.substack.com/subscribe"
-                    size={96}
-                    fgColor={color.qrFg}
-                    bgColor={color.qrBg}
-                  />
+                  [ YOU&apos;RE ON THE LIST ]
                 </div>
                 <div
                   style={{
                     fontFamily: font.mono,
-                    fontSize: 18,
-                    fontWeight: 500,
-                    color: color.accent,
-                    marginBottom: space.xs,
-                  }}
-                >
-                  €99 once
-                </div>
-                <div
-                  style={{
-                    fontFamily: font.mono,
-                    fontSize: typ.counter.fontSize,
+                    fontSize: typ.code.fontSize,
                     color: color.textMuted,
-                    lineHeight: 1.5,
+                    lineHeight: 1.7,
                   }}
                 >
-                  Course + Claude Pro 1 month
+                  We&apos;re building a 10-day course to take you
                   <br />
-                  Guided from your level to Level 7
+                  from Level {level} to Level 7.
+                </div>
+                <div
+                  style={{
+                    fontFamily: font.mono,
+                    fontSize: typ.finePrint.fontSize,
+                    color: color.textGhost,
+                    marginTop: space.md,
+                  }}
+                >
+                  We&apos;ll email you when it&apos;s ready.
                 </div>
               </div>
 
-              {/* Share row */}
+              {/* Share + retake row */}
               <div style={{ display: 'flex', gap: space.sm }}>
                 <button
                   onClick={shareResult}
@@ -713,9 +730,9 @@ export default function Home() {
                     flex: 1,
                     fontFamily: font.mono,
                     fontSize: typ.counter.fontSize,
-                    color: color.textLow,
-                    background: 'transparent',
-                    border: `1px solid rgba(0,200,220,0.2)`,
+                    color: color.accent,
+                    background: color.ctaBg,
+                    border: `1px solid ${color.ctaBorder}`,
                     borderRadius: 6,
                     padding: 10,
                     cursor: 'pointer',
@@ -739,7 +756,7 @@ export default function Home() {
                     textAlign: 'center',
                   }}
                 >
-                  → start at level 1 free
+                  ↻ retake quiz
                 </button>
               </div>
             </div>
