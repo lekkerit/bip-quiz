@@ -1,19 +1,18 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { LEVELS, QUESTIONS } from './lib/data';
 import { calculateLevel, AnswerRange } from './lib/scoring';
 import { color, font, type as typ, space } from './lib/theme';
 import RetroAnimation, { PacManIntro } from './components/RetroAnimation';
 
-type Screen = 'intro' | 'question' | 'email' | 'result';
+type Screen = 'intro' | 'question' | 'result';
 
 interface QuizState {
   screen: Screen;
   questionIndex: number;
   answers: AnswerRange[];
-  email: string;
   level: number;
   revealStep: number;
   typedTagline: string;
@@ -23,7 +22,6 @@ const initialState: QuizState = {
   screen: 'intro',
   questionIndex: 0,
   answers: [],
-  email: '',
   level: 1,
   revealStep: 0,
   typedTagline: '',
@@ -83,18 +81,10 @@ export default function Home() {
   const [state, setState] = useState<QuizState>(initialState);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [hoveredOption, setHoveredOption] = useState<number | null>(null);
-  const emailRef = useRef<HTMLInputElement>(null);
 
-  const { screen, questionIndex, answers, email, level, revealStep, typedTagline } = state;
+  const { screen, questionIndex, answers, level, revealStep, typedTagline } = state;
 
   const currentLevel = level > 0 && level <= LEVELS.length ? LEVELS[level - 1] : LEVELS[0];
-
-  // ── Email auto-focus ──
-  useEffect(() => {
-    if (screen === 'email') {
-      emailRef.current?.focus();
-    }
-  }, [screen]);
 
   // ── Result reveal chain ──
   useEffect(() => {
@@ -155,31 +145,12 @@ export default function Home() {
             return { ...prev, answers: newAnswers, questionIndex: prev.questionIndex + 1 };
           }
           const computedLevel = calculateLevel(newAnswers);
-          return { ...prev, answers: newAnswers, level: computedLevel, screen: 'email' };
+          return { ...prev, answers: newAnswers, level: computedLevel, screen: 'result', revealStep: 0, typedTagline: '' };
         });
       }, 150);
     },
     []
   );
-
-  const submitEmail = useCallback(() => {
-    if (!state.email.trim()) return;
-
-    const substackUrl = process.env.NEXT_PUBLIC_SUBSTACK_URL;
-    if (substackUrl) {
-      fetch(`${substackUrl}/api/v1/free`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: state.email,
-          first_url: 'https://quiz.botsinpublic.com',
-          referral_code: `level-${state.level}`,
-        }),
-      }).catch(() => {});
-    }
-
-    setState((prev) => ({ ...prev, screen: 'result', revealStep: 0, typedTagline: '' }));
-  }, [state.email, state.level]);
 
   const resetQuiz = useCallback(() => {
     setState(initialState);
@@ -452,159 +423,6 @@ export default function Home() {
     );
   }
 
-  // ── SCREEN: Email Gate ──
-
-  if (screen === 'email') {
-    return shell(
-      <>
-        <style>{`input[type=email]::placeholder { color: ${color.textGhost}; } input[type=email]:focus { border-color: ${color.selectedBorder} !important; }`}</style>
-
-        {/* Progress dots — all filled */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 8,
-            justifyContent: 'center',
-            marginBottom: space.xl,
-          }}
-        >
-          {Array.from({ length: QUESTIONS.length }, (_, i) => (
-            <div
-              key={i}
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: '50%',
-                background: color.accent,
-                opacity: 0.7,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Blurred fake result preview */}
-        <div
-          style={{
-            filter: 'blur(5px)',
-            opacity: 0.5,
-            pointerEvents: 'none',
-            userSelect: 'none',
-            marginBottom: space.lg,
-            padding: 14,
-            background: color.blurBg,
-            border: `1px solid ${color.blurBorder}`,
-            borderRadius: 8,
-          }}
-        >
-          <div
-            style={{
-              fontFamily: font.mono,
-              fontSize: typ.counter.fontSize,
-              color: color.accent,
-              marginBottom: space.sm,
-            }}
-          >
-            ◉ LEVEL UNLOCKED
-          </div>
-          <div
-            style={{
-              fontFamily: font.mono,
-              fontSize: 14,
-              color: color.textHigh,
-            }}
-          >
-            LEVEL {level} — {currentLevel.name}
-          </div>
-          <div
-            style={{
-              fontFamily: font.mono,
-              fontSize: typ.counter.fontSize,
-              color: color.textLow,
-              marginTop: space.xs,
-            }}
-          >
-            &ldquo;{currentLevel.tagline.slice(0, 30)}...&rdquo;
-          </div>
-        </div>
-
-        <h2
-          style={{
-            fontFamily: font.heading,
-            fontSize: 15,
-            fontWeight: 600,
-            color: color.textHigh,
-            margin: `0 0 ${space.xs}px 0`,
-          }}
-        >
-          Your result is ready.
-        </h2>
-        <p
-          style={{
-            fontFamily: font.mono,
-            fontSize: typ.counter.fontSize,
-            color: color.textMuted,
-            lineHeight: 1.6,
-            margin: `0 0 14px 0`,
-          }}
-        >
-          Enter your email to unlock your level — and be first to know when the course drops.
-        </p>
-        <input
-          ref={emailRef}
-          type="email"
-          placeholder="> _"
-          value={email}
-          onChange={(e) => setState((prev) => ({ ...prev, email: e.target.value }))}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') submitEmail();
-          }}
-          style={{
-            width: '100%',
-            boxSizing: 'border-box',
-            fontFamily: font.mono,
-            fontSize: typ.code.fontSize,
-            color: color.textHigh,
-            background: 'rgba(255,255,255,0.04)',
-            border: `1px solid rgba(232,117,58,0.15)`,
-            borderRadius: 8,
-            padding: '14px 18px',
-            outline: 'none',
-            marginBottom: 10,
-          }}
-        />
-        <button
-          onClick={submitEmail}
-          style={{
-            width: '100%',
-            fontFamily: font.mono,
-            fontSize: typ.code.fontSize,
-            letterSpacing: typ.code.letterSpacing,
-            color: color.accent,
-            background: color.ctaBg,
-            border: `1px solid ${color.ctaBorder}`,
-            borderRadius: 8,
-            padding: '14px 24px',
-            cursor: 'pointer',
-            marginBottom: space.md,
-            textAlign: 'center',
-          }}
-        >
-          [ unlock my level → ]
-        </button>
-        <p
-          style={{
-            fontFamily: font.mono,
-            fontSize: typ.finePrint.fontSize,
-            color: color.textGhost,
-            margin: 0,
-          }}
-        >
-          No spam. 3 emails over 3 days. Unsubscribe anytime.
-        </p>
-      </>
-    );
-  }
-
   // ── SCREEN: Result Reveal ──
 
   const taglineComplete = typedTagline.length >= currentLevel.tagline.length;
@@ -799,7 +617,7 @@ export default function Home() {
                     textTransform: 'uppercase',
                   }}
                 >
-                  [ YOU&apos;RE ON THE LIST ]
+                  [ NEXT STEP ]
                 </div>
                 <div
                   style={{
@@ -809,12 +627,26 @@ export default function Home() {
                     lineHeight: 1.7,
                   }}
                 >
-                  {level < 7 ? (
-                    <>We&apos;ll take you from Level {level} to Level 7.</>
-                  ) : (
-                    <>You&apos;re already at the top. Stay sharp.</>
-                  )}
+                  Join the free webinar and see how Claude can take the admin off your plate.
                 </div>
+                <a
+                  href={`https://botsinpublic.dev/?utm_source=quiz&utm_content=level-${level}`}
+                  style={{
+                    display: 'inline-block',
+                    marginTop: space.md,
+                    fontFamily: font.mono,
+                    fontSize: typ.code.fontSize,
+                    letterSpacing: typ.code.letterSpacing,
+                    color: color.accent,
+                    background: color.ctaBg,
+                    border: `1px solid ${color.ctaBorder}`,
+                    borderRadius: 8,
+                    padding: '12px 24px',
+                    textDecoration: 'none',
+                  }}
+                >
+                  [ save my seat → ]
+                </a>
                 <div
                   style={{
                     fontFamily: font.mono,
@@ -823,7 +655,7 @@ export default function Home() {
                     marginTop: space.md,
                   }}
                 >
-                  Course drops soon. You&apos;ll be first to know.
+                  Free. No spam.
                 </div>
               </div>
 
